@@ -1,31 +1,22 @@
-import { FaTimes } from 'react-icons/fa';
-import PropTypes from 'prop-types';
-import Card from './shared/Card';
+// src/components/FeedbackList.js
+import React, { useContext } from 'react';
+import FeedbackContext from '../context/FeedbackContext';
+import FeedbackItem from './FeedbackItem';
 
-function FeedbackItem({ item, handledelete }) { 
-    // Click handler to delete an item
-    const handleClick = () => {
-        handledelete(item.id);
-    };
+function FeedbackList() {
+    const { feedback, deleteFeedback } = useContext(FeedbackContext); // Access context data
+
+    if (!feedback || feedback.length === 0) {
+        return <p>No Feedback Yet</p>;
+    }
 
     return (
-        <Card reverse={true}>
-            <div className="num-display">{item.rating}</div>
-            <button onClick={handleClick} className="close">
-                <FaTimes color='purple' /> 
-            </button>
-            <div className="text-display">{item.text}</div>
-        </Card>
+        <div className="feedback-list">
+            {feedback.map((item) => (
+                <FeedbackItem key={item.id} item={item} handledelete={deleteFeedback} />
+            ))}
+        </div>
     );
 }
 
-FeedbackItem.propTypes = {
-    item: PropTypes.shape({
-        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-        rating: PropTypes.number.isRequired,
-        text: PropTypes.string.isRequired,
-    }).isRequired,
-    handledelete: PropTypes.func.isRequired,
-};
-
-export default FeedbackItem;
+export default FeedbackList;

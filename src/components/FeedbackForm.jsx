@@ -1,13 +1,25 @@
-import React, { useState } from 'react';
+// src/components/FeedbackForm.js
+import React, { useState, useEffect, useContext } from 'react';
+import FeedbackContext from '../context/FeedbackContext';
 import Card from './shared/Card';
 import Button from './shared/Button';
 import RatingSelect from './RatingSelect';
 
-function FeedbackForm({ handleAdd }) { // Receive handleAdd as a prop
+function FeedbackForm() {
     const [text, setText] = useState('');
-    const [rating, setRating] = useState(10);
     const [btnDisabled, setBtnDisabled] = useState(true);
     const [message, setMessage] = useState('');
+
+    const { addFeedback, feedbackEdit, updateFeedback, rating, setRating } = useContext(FeedbackContext);
+
+    // Load feedback to edit when `feedbackEdit` changes
+    useEffect(() => {
+        if (feedbackEdit.edit === true) {
+            setBtnDisabled(false);
+            setText(feedbackEdit.item.text);
+            setRating(feedbackEdit.item.rating); // Update rating in context
+        }
+    }, [feedbackEdit, setRating]);
 
     const handleTextChange = (e) => {
         const value = e.target.value;
@@ -27,8 +39,12 @@ function FeedbackForm({ handleAdd }) { // Receive handleAdd as a prop
     const handleSubmit = (e) => {
         e.preventDefault();
         if (text.trim().length > 10) {
-            const newFeedback = { text, rating };
-            handleAdd(newFeedback); // Call handleAdd to add feedback
+            const newFeedback = { text, rating }; // Use context rating
+            if (feedbackEdit.edit) {
+                updateFeedback(feedbackEdit.item.id, newFeedback);
+            } else {
+                addFeedback(newFeedback);
+            }
             setText('');
             setRating(10);
             setBtnDisabled(true);
@@ -38,8 +54,8 @@ function FeedbackForm({ handleAdd }) { // Receive handleAdd as a prop
     return (
         <Card>
             <form onSubmit={handleSubmit}>
-                <h2>How would you rate your service with us?</h2>
-                <RatingSelect select={setRating} selected={rating} />
+                <h2>{feedbackEdit.edit ? 'Edit your review' : 'How would you rate our service?'}</h2>
+                <RatingSelect /> {/* No need to pass select or selected props */}
                 <div className='input-group'>
                     <input
                         onChange={handleTextChange}
@@ -48,7 +64,7 @@ function FeedbackForm({ handleAdd }) { // Receive handleAdd as a prop
                         value={text}
                     />
                     <Button type='submit' isDisabled={btnDisabled}>
-                        Send
+                        {feedbackEdit.edit ? 'Update' : 'Send'}
                     </Button>
                 </div>
                 {message && <div className='message'>{message}</div>}
